@@ -1,28 +1,33 @@
 #include "XLogger.h"
 
+#include <ctime>
 #include <iostream>
+#include <thread>
 
-XLogger::XLogger(std::string&& instance_name) : XLogger(instance_name)
-{
-}
-
-XLogger::XLogger(const std::string& instance_name)
-    : _log_file(std::ofstream(instance_name.c_str(), std::ios::app | std::ios::out))
-{
-}
+char Timestamp::_date_time[32] = { "" };
 
 XLogger::~XLogger()
 {
   _log_file.close();
 }
 
-void XLogger::Output(std::string&& log_msg)
+int XLogger::Init(std::string_view instance_name)
 {
-  Output(log_msg);
+  _log_file = std::ofstream(instance_name.data(), std::ios::app | std::ios::out);
+  return 0;
 }
 
-void XLogger::Output(const std::string& log_msg)
+XLogger* XLogger::Instance()
 {
-  std::cout << log_msg << std::endl;
-  _log_file << log_msg << std::endl;
+  static XLogger instance;
+  return &instance;
+}
+
+char* Timestamp::Now()
+{
+  auto t = time(nullptr);
+  tm s_t;
+  localtime_s(&s_t, &t);
+  strftime(_date_time, sizeof _date_time, "%d/%m/%Y %H:%M:%S", &s_t);
+  return _date_time;
 }
